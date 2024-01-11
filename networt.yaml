@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template deploys a VPC with a public, private and IGW
+
+Parameters:
+  VpcCidr:
+    Description: VpcCidr 
+    Type: String
+    Default: "10.0.0.0/16"
+
+Resources:
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: JJtech-network
+        - Key: Env 
+          Value: test 
+          
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: !Ref AWS::Region
+      VpcId: !Ref myVPC
+      CidrBlock: !Select [0, !Cidr [!Ref VpcCidr, 2, 8] ] #select, the second item from the list of two networks. 2,8 means two network of /24
+      Tags:
+        - Key: Name
+          Value: public-subnet 
+
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: !Ref AWS::Region
+      VpcId: !Ref myVPC
+      CidrBlock: !Select [1, !Cidr [!Ref VpcCidr, 2, 8] ] #select, the second item from the list of two networks. 2,8 means two network of /24
+      Tags:
+        - Key: Name
+          Value: private-subnet 
+          
+  
